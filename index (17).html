@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Afrikaans Native Speaker Assessment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f4f6f5; --card:#ffffff; --ink:#14201b; --muted:#5d6b65; --line:#e1e7e4;
+    --brand:#0f7a4f; --brand-dark:#0a5a3a; --brand-soft:#e7f4ee;
+    --danger:#c0392b; --danger-soft:#fdecea; --warn-soft:#fff6e5;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;font-size:15px}
+  header{background:var(--brand-dark);color:#fff;padding:22px 18px 26px}
+  .wrap{max-width:720px;margin:0 auto}
+  header .tag{font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.75}
+  header h1{font-size:22px;font-weight:700;margin-top:4px}
+  header p{font-size:14px;opacity:.85;margin-top:4px}
+  main{padding:0 14px 60px}
+  .progress{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin:-3px auto 18px;max-width:720px}
+  .progress div{height:100%;width:0;background:var(--brand);transition:width .35s}
+  .steps-label{max-width:720px;margin:0 auto 10px;font-size:13px;color:var(--muted);font-weight:500}
+  .step{display:none;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 18px;max-width:720px;margin:0 auto}
+  .step.active{display:block}
+  h2{font-size:19px;margin-bottom:6px}
+  h3{font-size:15px;margin:24px 0 2px;padding-top:16px;border-top:1px solid var(--line);color:var(--brand-dark)}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:18px}
+  label{display:block;font-weight:600;font-size:14px;margin:14px 0 6px}
+  .req{color:var(--danger)}
+  input[type=text],input[type=tel],input[type=email],select,textarea{width:100%;padding:11px 12px;border:1px solid #cdd6d2;border-radius:9px;font:inherit;background:#fff}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--brand-soft);border-color:var(--brand)}
+  textarea{min-height:120px;resize:vertical}
+  .phone-row{display:flex;align-items:stretch}
+  .phone-row span{display:flex;align-items:center;padding:0 14px;background:#eef2f0;border:1px solid #cdd6d2;border-right:0;border-radius:9px 0 0 9px;font-weight:600}
+  .phone-row input{border-radius:0 9px 9px 0 !important}
+  .hint{font-size:12.5px;color:var(--muted);margin-top:5px}
+  .radio-group{display:grid;gap:8px}
+  .radio-group.two{grid-template-columns:1fr 1fr}
+  .radio-group label,.option{display:flex;gap:10px;align-items:flex-start;font-weight:500;margin:0;padding:11px 12px;border:1px solid var(--line);border-radius:9px;cursor:pointer;background:#fff}
+  .radio-group label:has(input:checked),.option:has(input:checked){border-color:var(--brand);background:var(--brand-soft)}
+  .radio-group input,.option input{margin-top:4px;accent-color:var(--brand)}
+  .check{display:flex;gap:10px;align-items:flex-start;font-weight:500;margin-top:14px}
+  .check input{margin-top:5px;accent-color:var(--brand)}
+  .rules{background:var(--brand-soft);border-radius:10px;padding:14px 16px;margin:14px 0}
+  .rules li{margin:6px 0 6px 18px;font-size:14px}
+  .note{border-radius:10px;padding:12px 14px;font-size:14px;margin:12px 0}
+  .note.warn{background:var(--warn-soft);color:#7a4f0e}
+  .note.err{background:var(--danger-soft);color:var(--danger)}
+  .passage{background:#f7faf8;border-left:4px solid var(--brand);border-radius:8px;padding:14px 16px;font-size:16.5px;line-height:1.7;margin:10px 0 16px;user-select:none;-webkit-user-select:none}
+  .rec{border:1px dashed #b9c7c0;border-radius:12px;padding:16px;text-align:center}
+  .rec-btn{background:var(--danger);color:#fff;border:0;border-radius:99px;padding:12px 26px;font:inherit;font-weight:600;cursor:pointer}
+  .rec-btn.recording{background:#333;animation:pulse 1.2s infinite}
+  @keyframes pulse{50%{opacity:.7}}
+  .rec-time{font-variant-numeric:tabular-nums;font-weight:600;margin-top:10px;font-size:15px}
+  .rec-status{font-size:13.5px;margin-top:8px;color:var(--muted)}
+  .rec-status.ok{color:var(--brand)} .rec-status.err{color:var(--danger)}
+  .rec audio{width:100%;margin-top:12px}
+  .nav{display:flex;justify-content:space-between;gap:10px;margin-top:22px}
+  .btn{border:0;border-radius:10px;padding:12px 20px;font:inherit;font-weight:600;cursor:pointer}
+  .btn-primary{background:var(--brand);color:#fff;margin-left:auto}
+  .btn-primary:hover{background:var(--brand-dark)}
+  .btn-ghost{background:#eef2f0;color:var(--ink)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .timer{position:sticky;top:0;z-index:5;background:var(--ink);color:#fff;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;font-weight:600;margin-bottom:14px}
+  .timer.low{background:var(--danger)}
+  .q{margin:18px 0;user-select:none;-webkit-user-select:none}
+  .q-title{font-weight:600;margin-bottom:8px}
+  .q-title span{color:var(--brand);margin-right:4px}
+  .options{display:grid;gap:7px}
+  .corr{background:#f7faf8;border-radius:8px;padding:10px 12px;font-family:ui-monospace,monospace;font-size:14.5px;margin-bottom:6px;user-select:none;-webkit-user-select:none}
+  .words{font-size:12.5px;color:var(--muted);text-align:right;margin-top:4px}
+  .error-msg{color:var(--danger);font-size:13.5px;margin-top:12px;display:none}
+  .overlay{position:fixed;inset:0;background:rgba(20,32,27,.75);display:none;align-items:center;justify-content:center;z-index:50;color:#fff;text-align:center;padding:20px}
+  .overlay.show{display:flex}
+  .spinner{width:44px;height:44px;border:4px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 14px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .done{text-align:center;padding:20px 0}
+  .done .icon{width:64px;height:64px;border-radius:50%;background:var(--brand-soft);color:var(--brand);font-size:32px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+  .ref{display:inline-block;background:var(--brand-soft);color:var(--brand-dark);font-weight:700;padding:8px 16px;border-radius:8px;margin:12px 0;letter-spacing:.05em}
+  .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--danger);color:#fff;padding:12px 18px;border-radius:10px;font-size:14px;display:none;z-index:40;max-width:92%}
+  footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:20px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="tag">Translitmedia · Afrikaans Project</div>
+    <h1>Native Afrikaans Speaker Assessment</h1>
+    <p>For native Afrikaans speakers from South Africa only</p>
+  </div>
+</header>
+
+<main>
+  <div class="progress"><div id="bar"></div></div>
+  <div class="steps-label" id="stepLabel">Welcome</div>
+
+  <!-- STEP 0: INTRO -->
+  <section class="step active" data-step="0">
+    <h2>Before you start</h2>
+    <p class="sub">This test checks whether you are a native Afrikaans speaker. It takes about 10 minutes.</p>
+    <div class="rules">
+      <strong>Who can take this test:</strong>
+      <ul>
+        <li>Native Afrikaans speakers living in South Africa</li>
+        <li>A South African WhatsApp number (+27) is required</li>
+        <li>18 years or older</li>
+      </ul>
+    </div>
+    <div class="rules">
+      <strong>The test has 3 parts:</strong>
+      <ol>
+        <li>Read a short Afrikaans text aloud (voice recording)</li>
+        <li>12 multiple-choice questions (6-minute time limit)</li>
+        <li>Short writing and correction tasks</li>
+      </ol>
+    </div>
+    <div class="note warn">
+      <strong>Rules:</strong> Do not use Google Translate, ChatGPT or any other help. Do not leave this page during the quiz and writing parts. Leaving the page and pasting text are recorded automatically. Every team member must take this test individually with their own voice. Each number can submit only once.
+    </div>
+    <p class="hint">You need a quiet place and a working microphone. Please allow microphone access when your browser asks.</p>
+    <div id="alreadyDone" class="note err" style="display:none">This device has already submitted the assessment. Each person may submit only once.</div>
+    <div class="nav"><button class="btn btn-primary" id="startBtn">Start the assessment</button></div>
+  </section>
+
+  <!-- STEP 1: INFO -->
+  <section class="step" data-step="1">
+    <h2>Your details</h2>
+    <p class="sub">Use the same WhatsApp number you used to join our group.</p>
+
+    <label>Full name <span class="req">*</span></label>
+    <input type="text" id="name" autocomplete="name">
+
+    <label>WhatsApp number <span class="req">*</span></label>
+    <div class="phone-row">
+      <span>+27</span>
+      <input type="tel" id="phone" placeholder="82 123 4567" inputmode="numeric" maxlength="13">
+    </div>
+    <div class="hint">Only South African numbers (+27) are accepted.</div>
+
+    <label>Email <span class="req">*</span></label>
+    <input type="email" id="email">
+
+    <label>Age group <span class="req">*</span></label>
+    <select id="age">
+      <option value="">Select</option>
+      <option>18–24</option><option>25–34</option><option>35–44</option><option>45–54</option><option>55+</option>
+    </select>
+
+    <label>Province <span class="req">*</span></label>
+    <select id="province">
+      <option value="">Select province</option>
+      <option>Western Cape</option><option>Northern Cape</option><option>Eastern Cape</option>
+      <option>Free State</option><option>Gauteng</option><option>North West</option>
+      <option>KwaZulu-Natal</option><option>Mpumalanga</option><option>Limpopo</option>
+    </select>
+
+    <label>City / Town <span class="req">*</span></label>
+    <input type="text" id="city">
+
+    <h3>Language background</h3>
+
+    <label>Your first language (mother tongue) <span class="req">*</span></label>
+    <select id="firstLang">
+      <option value="">Select</option>
+      <option>Afrikaans</option><option>English</option><option>isiZulu</option>
+      <option>isiXhosa</option><option>Sesotho</option><option>Setswana</option><option>Other</option>
+    </select>
+
+    <label>How did you learn Afrikaans? <span class="req">*</span></label>
+    <select id="learned">
+      <option value="">Select</option>
+      <option>From birth at home</option>
+      <option>At school</option>
+      <option>Later in life</option>
+    </select>
+
+    <label>Which language do you speak most at home? <span class="req">*</span></label>
+    <select id="homeLang">
+      <option value="">Select</option>
+      <option>Afrikaans</option><option>English</option><option>Both Afrikaans and English</option><option>Other</option>
+    </select>
+
+    <h3>Work setup</h3>
+
+    <label>Do you have a laptop or desktop computer? <span class="req">*</span></label>
+    <div class="radio-group two">
+      <label><input type="radio" name="laptop" value="Yes"> Yes</label>
+      <label><input type="radio" name="laptop" value="No"> No</label>
+    </div>
+
+    <label>Do you have headphones or earphones? <span class="req">*</span></label>
+    <div class="radio-group two">
+      <label><input type="radio" name="headphones" value="Yes"> Yes</label>
+      <label><input type="radio" name="headphones" value="No"> No</label>
+    </div>
+
+    <label>Transcription experience <span class="req">*</span></label>
+    <select id="experience">
+      <option value="">Select</option>
+      <option>No experience</option><option>Less than 6 months</option>
+      <option>6–12 months</option><option>More than 1 year</option>
+    </select>
+
+    <label>How many hours can you work per day? <span class="req">*</span></label>
+    <select id="hours">
+      <option value="">Select</option>
+      <option>1–2 hours</option><option>3–4 hours</option><option>5–6 hours</option><option>7+ hours</option>
+    </select>
+
+    <label>Preferred payment method <span class="req">*</span></label>
+    <select id="payment">
+      <option value="">Select</option>
+      <option>Payoneer</option><option>Binance (USDT)</option><option>Bank transfer</option><option>Other</option>
+    </select>
+
+    <h3>Application type</h3>
+
+    <label>You are applying as <span class="req">*</span></label>
+    <div class="radio-group">
+      <label><input type="radio" name="role" value="Individual freelancer"> Individual freelancer</label>
+      <label><input type="radio" name="role" value="Vendor / Team leader"> Vendor / Team leader</label>
+      <label><input type="radio" name="role" value="Team member under a vendor"> Team member under a vendor</label>
+    </div>
+
+    <div id="vendorBox" style="display:none">
+      <label>Vendor / Team leader name <span class="req">*</span></label>
+      <input type="text" id="vendor">
+    </div>
+    <div id="teamBox" style="display:none">
+      <label>How many native Afrikaans speakers are in your team? <span class="req">*</span></label>
+      <input type="text" id="teamSize" inputmode="numeric">
+    </div>
+
+    <label class="check"><input type="checkbox" id="adult"> I am 18 years or older.</label>
+    <label class="check"><input type="checkbox" id="declare"> I confirm that I am a native Afrikaans speaker from South Africa and that the recording and answers in this test are my own.</label>
+
+    <div class="error-msg" id="err1"></div>
+    <div class="nav">
+      <button class="btn btn-ghost" data-back>Back</button>
+      <button class="btn btn-primary" data-next>Continue</button>
+    </div>
+  </section>
+
+  <!-- STEP 2: READING -->
+  <section class="step" data-step="2">
+    <h2>Part 1 · Read aloud</h2>
+    <p class="sub">Press record and read the text below clearly at your normal speed.</p>
+    <div class="passage">
+      Ek woon in Suid-Afrika en ek praat Afrikaans by die huis. Elke Saterdag braai ons saam met familie en vriende. Ons eet boerewors, tjops en pap met sous. Ek hou baie van die somer, want dan kan ons strand toe gaan. In die winter is dit koud en dan drink ons warm koffie met beskuit.
+    </div>
+    <div class="rec" id="rec-reading">
+      <button class="rec-btn">● Start recording</button>
+      <div class="rec-time">00:00 / 01:30</div>
+      <div class="rec-status">Minimum 10 seconds</div>
+      <audio controls hidden></audio>
+    </div>
+    <div class="note warn" style="margin-top:16px">The next part is a timed quiz (6 minutes). Once you start it, you cannot come back to the recording.</div>
+    <div class="error-msg" id="err2"></div>
+    <div class="nav">
+      <button class="btn btn-ghost" data-back>Back</button>
+      <button class="btn btn-primary" data-next>Start the quiz</button>
+    </div>
+  </section>
+
+  <!-- STEP 3: QUIZ -->
+  <section class="step" data-step="3">
+    <div class="timer" id="timer"><span>Part 2 · Quiz</span><span id="timeLeft">06:00</span></div>
+    <p class="sub">Choose the best answer for each question. The quiz moves on automatically when time runs out.</p>
+    <div id="quiz"></div>
+    <div class="error-msg" id="err3"></div>
+    <div class="nav"><button class="btn btn-primary" data-next>Continue</button></div>
+  </section>
+
+  <!-- STEP 4: WRITING -->
+  <section class="step" data-step="4">
+    <h2>Part 3 · Writing</h2>
+    <p class="sub">Pasting is disabled. Type your answers yourself.</p>
+
+    <label>A. Rewrite each sentence correctly (spelling, capital letters, punctuation and grammar)</label>
+    <div class="corr">my ma het vanoggend vir ons pannekoek gemaak</div>
+    <input type="text" class="corr-in" spellcheck="false" autocomplete="off">
+    <div class="corr" style="margin-top:12px">ons gaan more saam met ons vriende strand toe</div>
+    <input type="text" class="corr-in" spellcheck="false" autocomplete="off">
+    <div class="corr" style="margin-top:12px">Hy het nie sy huiswerk gedoen</div>
+    <input type="text" class="corr-in" spellcheck="false" autocomplete="off">
+
+    <label style="margin-top:22px">B. Skryf 3 tot 5 sinne in Afrikaans oor jou gunsteling kos en hoekom jy daarvan hou.</label>
+    <textarea id="written" spellcheck="false"></textarea>
+    <div class="words" id="wordCount">0 words (minimum 25)</div>
+
+    <div class="error-msg" id="err4"></div>
+    <div class="nav"><button class="btn btn-primary" id="submitBtn">Submit assessment</button></div>
+  </section>
+
+  <!-- STEP 5: DONE -->
+  <section class="step" data-step="5">
+    <div class="done">
+      <div class="icon">✓</div>
+      <h2>Assessment submitted</h2>
+      <p class="sub">Thank you. Our team will review your recording and answers.</p>
+      <div class="ref" id="refId"></div>
+      <p class="hint">Save this reference number. If you pass, you will be added to the project group. Vendors and team leaders will receive their commission for every team member who passes.</p>
+    </div>
+  </section>
+
+  <footer>© Translitmedia · Native Speaker Verification</footer>
+</main>
+
+<div class="overlay" id="overlay"><div><div class="spinner"></div><div>Uploading your assessment...<br>Please do not close this page.</div></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ========= CONFIG ========= */
+const SCRIPT_URL = "PASTE_YOUR_WEB_APP_URL_HERE";
+const QUIZ_SECONDS = 360;
+
+/* Answers are checked on the server (Code.gs), not here */
+const QUESTIONS = [
+  {id:"q1", q:'Wat beteken: "Ek kom nou-nou"?', o:{a:"Ek kom oor 'n rukkie", b:"Ek kom glad nie", c:"Ek het gister gekom", d:"Ek kom volgende week"}},
+  {id:"q2", q:'"Ons ry met die bakkie plaas toe." Wat is \'n bakkie in hierdie sin?', o:{a:"'n Klein bak vir kos", b:"'n Ligte vragmotor (pick-up)", c:"'n Fiets", d:"'n Bus"}},
+  {id:"q3", q:'Wat beteken die idioom "Agteros kom ook in die kraal"?', o:{a:"Wie stadig werk, bereik ook sy doel", b:"Die laaste os is altyd die sterkste", c:"Moenie laat wees vir werk nie", d:"Boere hou hul osse in die kraal"}},
+  {id:"q4", q:"Watter sin is grammatikaal korrek?", o:{a:"Ek het hom nie gesien.", b:"Ek het hom nie gesien nie.", c:"Ek nie het hom gesien nie.", d:"Ek het nie gesien hom nie."}},
+  {id:"q5", q:'Wat is "padkos"?', o:{a:"Kos wat jy saamvat vir 'n lang reis", b:"Teer wat op paaie gebruik word", c:"Kos vir troeteldiere", d:"Ontbyt in die bed"}},
+  {id:"q6", q:'"Hy het \'n klap van die windmeul weg." Wat beteken dit?', o:{a:"Hy is nie heeltemal reg in die kop nie", b:"Hy werk op 'n plaas", c:"Hy is baie sterk", d:"Hy het 'n nuwe windpomp gekoop"}},
+  {id:"q7", q:'Wat beteken "Moenie die kat in die donker knyp nie"?', o:{a:"Moenie dinge skelm agter iemand se rug doen nie", b:"Wees altyd lief vir diere", c:"Moenie snags alleen uitgaan nie", d:"Moenie bang wees vir die donker nie"}},
+  {id:"q8", q:"Wat sê 'n mens gewoonlik as jy jouself seermaak?", o:{a:"Eina!", b:"Lekker!", c:"Baie dankie!", d:"Totsiens!"}},
+  {id:"q9", q:'Wat is die verkleinwoord van "boom"?', o:{a:"boomtjie", b:"boompie", c:"boomkie", d:"boometjie"}},
+  {id:"q10", q:'Wat is die meervoud van "kind"?', o:{a:"kinde", b:"kinds", c:"kinders", d:"kindere"}},
+  {id:"q11", q:'Iemand sien \'n klein hondjie en sê "Ag shame!". Wat bedoel hulle?', o:{a:"Die hondjie is oulik of hulle voel jammer vir hom", b:"Jy moet skaam wees", c:"Hulle is kwaad", d:"Hulle groet die hondjie"}},
+  {id:"q12", q:'Voltooi die sin: "Ek weet dat hy môre ___."', o:{a:"kom", b:"kom hy", c:"hy kom", d:"is kom"}}
+];
+
+/* ========= STATE ========= */
+const state = {
+  step:0, audio:{}, phase:"", tabSwitches:0, pasteAttempts:0,
+  quizStart:0, quizTime:0, quizTimer:null, quizLocked:false, quizWarned:false,
+  quizAnswers:{}, writeStart:0
+};
+const LABELS = ["Welcome","Step 1 of 4 · Your details","Step 2 of 4 · Read aloud","Step 3 of 4 · Quiz","Step 4 of 4 · Writing","Completed"];
+const LAST = 5;
+const $ = id => document.getElementById(id);
+
+function storageGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function storageSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+
+function toast(msg){
+  const t=$("toast"); t.textContent=msg; t.style.display="block";
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.style.display="none",4000);
+}
+function fmt(s){ s=Math.max(0,Math.floor(s)); return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0"); }
+function showErr(n,msg){ const e=$("err"+n); e.textContent=msg; e.style.display=msg?"block":"none"; return false; }
+function radio(name){ const r=document.querySelector(`input[name="${name}"]:checked`); return r?r.value:""; }
+
+/* ========= NAVIGATION ========= */
+function go(n){
+  document.querySelectorAll(".step").forEach(s=>s.classList.toggle("active", +s.dataset.step===n));
+  state.step=n;
+  $("bar").style.width=(n/LAST*100)+"%";
+  $("stepLabel").textContent=LABELS[n];
+  window.scrollTo({top:0,behavior:"smooth"});
+  if(n===3) startQuiz();
+  if(n===4){ state.phase="writing"; state.writeStart=Date.now(); }
+}
+
+document.querySelectorAll("[data-back]").forEach(b=>b.addEventListener("click",()=>{
+  if(state.step>=3) return;
+  go(state.step-1);
+}));
+document.querySelectorAll("[data-next]").forEach(b=>b.addEventListener("click",()=>{
+  if(validate(state.step)===true) go(state.step+1);
+}));
+
+$("startBtn").addEventListener("click",()=>{
+  if(storageGet("af_assess_done")){ $("alreadyDone").style.display="block"; return; }
+  go(1);
+});
+if(storageGet("af_assess_done")) $("alreadyDone").style.display="block";
+
+/* ========= PHONE (+27 only) ========= */
+// Returns the 9 local digits (e.g. 821234567) or "" if invalid
+function saLocal(raw){
+  let d=String(raw||"").replace(/\D/g,"");
+  if(d.startsWith("0027")) d=d.slice(4);
+  else if(d.startsWith("27") && d.length===11) d=d.slice(2);
+  if(d.startsWith("0")) d=d.slice(1);
+  return /^[6-8]\d{8}$/.test(d) ? d : "";
+}
+$("phone").addEventListener("input",()=>{ $("phone").value=$("phone").value.replace(/[^\d\s]/g,""); });
+
+document.querySelectorAll('input[name=role]').forEach(r=>r.addEventListener("change",()=>{
+  const role=radio("role");
+  $("vendorBox").style.display = role==="Team member under a vendor" ? "block":"none";
+  $("teamBox").style.display = role==="Vendor / Team leader" ? "block":"none";
+}));
+
+/* ========= VALIDATION ========= */
+function validate(n){
+  if(n===1){
+    const role=radio("role");
+    if(!$("name").value.trim() || $("name").value.trim().split(/\s+/).length<2) return showErr(1,"Please enter your full name (first and last name).");
+    if(!saLocal($("phone").value)) return showErr(1,"Please enter a valid South African WhatsApp number (+27). Example: 82 123 4567");
+    if(!/^\S+@\S+\.\S+$/.test($("email").value.trim())) return showErr(1,"Please enter a valid email address.");
+    if(!$("age").value) return showErr(1,"Please select your age group.");
+    if(!$("province").value) return showErr(1,"Please select your province.");
+    if(!$("city").value.trim()) return showErr(1,"Please enter your city or town.");
+    if(!$("firstLang").value) return showErr(1,"Please select your first language.");
+    if(!$("learned").value) return showErr(1,"Please tell us how you learned Afrikaans.");
+    if(!$("homeLang").value) return showErr(1,"Please select the language you speak most at home.");
+    if(!radio("laptop")) return showErr(1,"Please tell us if you have a laptop or desktop computer.");
+    if(!radio("headphones")) return showErr(1,"Please tell us if you have headphones.");
+    if(!$("experience").value) return showErr(1,"Please select your transcription experience.");
+    if(!$("hours").value) return showErr(1,"Please select your daily working hours.");
+    if(!$("payment").value) return showErr(1,"Please select your preferred payment method.");
+    if(!role) return showErr(1,"Please select how you are applying.");
+    if(role==="Team member under a vendor" && !$("vendor").value.trim()) return showErr(1,"Please enter your vendor or team leader's name.");
+    if(role==="Vendor / Team leader" && !/^\d+$/.test($("teamSize").value.trim())) return showErr(1,"Please enter your team size as a number.");
+    if(!$("adult").checked) return showErr(1,"You must be 18 years or older to apply.");
+    if(!$("declare").checked) return showErr(1,"Please confirm the declaration.");
+    showErr(1,""); return true;
+  }
+  if(n===2){
+    if(!state.audio.reading) return showErr(2,"Please record yourself reading the text.");
+    showErr(2,""); return true;
+  }
+  if(n===3){
+    const answered=Object.keys(collectQuiz()).length;
+    if(answered<QUESTIONS.length && !state.quizWarned){
+      state.quizWarned=true;
+      return showErr(3,`You answered ${answered} of ${QUESTIONS.length} questions. Press Continue again to move on anyway.`);
+    }
+    finishQuiz(); showErr(3,""); return true;
+  }
+  return true;
+}
+
+/* ========= RECORDER ========= */
+function pickMime(){
+  if(!window.MediaRecorder || !MediaRecorder.isTypeSupported) return "";
+  const types=["audio/webm;codecs=opus","audio/webm","audio/mp4","audio/ogg;codecs=opus"];
+  for(const t of types){ if(MediaRecorder.isTypeSupported(t)) return t; }
+  return "";
+}
+function setupRecorder(key,minSec,maxSec){
+  const box=$("rec-"+key);
+  const btn=box.querySelector(".rec-btn"), lbl=box.querySelector(".rec-time"),
+        status=box.querySelector(".rec-status"), player=box.querySelector("audio");
+  let mr=null, chunks=[], t0=0, iv=null, stream=null;
+
+  function stop(){ clearInterval(iv); if(mr && mr.state==="recording") mr.stop(); }
+
+  btn.addEventListener("click", async ()=>{
+    if(mr && mr.state==="recording"){ stop(); return; }
+    if(!navigator.mediaDevices || !window.MediaRecorder){
+      status.textContent="Your browser does not support recording. Please use Chrome or Safari (latest version).";
+      status.className="rec-status err"; return;
+    }
+    try{ stream=await navigator.mediaDevices.getUserMedia({audio:true}); }
+    catch(e){ status.textContent="Microphone access was blocked. Please allow microphone access and try again."; status.className="rec-status err"; return; }
+
+    const mime=pickMime();
+    try{ mr = mime ? new MediaRecorder(stream,{mimeType:mime}) : new MediaRecorder(stream); }
+    catch(e){ mr = new MediaRecorder(stream); }
+    chunks=[];
+    mr.ondataavailable=e=>{ if(e.data && e.data.size) chunks.push(e.data); };
+    mr.onstop=()=>{
+      const dur=(Date.now()-t0)/1000;
+      stream.getTracks().forEach(t=>t.stop());
+      btn.classList.remove("recording");
+      btn.textContent="● Record again";
+      const type=mr.mimeType||mime||"audio/webm";
+      if(dur<minSec){
+        delete state.audio[key]; player.hidden=true;
+        status.textContent=`Too short (${Math.round(dur)} seconds). Minimum is ${minSec} seconds. Please record again.`;
+        status.className="rec-status err"; return;
+      }
+      const blob=new Blob(chunks,{type});
+      state.audio[key]={blob,type,dur:Math.round(dur)};
+      player.src=URL.createObjectURL(blob); player.hidden=false;
+      status.textContent=`Recorded ${Math.round(dur)} seconds. Listen back and record again if needed.`;
+      status.className="rec-status ok";
+    };
+    mr.start(); t0=Date.now();
+    btn.textContent="■ Stop recording"; btn.classList.add("recording");
+    status.textContent="Recording..."; status.className="rec-status";
+    iv=setInterval(()=>{
+      const s=(Date.now()-t0)/1000;
+      lbl.textContent=fmt(s)+" / "+fmt(maxSec);
+      if(s>=maxSec) stop();
+    },250);
+  });
+}
+setupRecorder("reading",10,90);
+
+/* ========= QUIZ ========= */
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function renderQuiz(){
+  const wrap=$("quiz"); wrap.innerHTML="";
+  shuffle(QUESTIONS).forEach((q,i)=>{
+    const div=document.createElement("div"); div.className="q";
+    const title=document.createElement("div"); title.className="q-title";
+    title.innerHTML=`<span>${i+1}.</span>`; title.appendChild(document.createTextNode(q.q));
+    const opts=document.createElement("div"); opts.className="options";
+    shuffle(Object.keys(q.o)).forEach(k=>{
+      const lab=document.createElement("label"); lab.className="option";
+      const inp=document.createElement("input"); inp.type="radio"; inp.name=q.id; inp.value=k;
+      lab.appendChild(inp); lab.appendChild(document.createTextNode(q.o[k]));
+      opts.appendChild(lab);
+    });
+    div.appendChild(title); div.appendChild(opts); wrap.appendChild(div);
+  });
+}
+function collectQuiz(){
+  const ans={};
+  QUESTIONS.forEach(q=>{ const v=radio(q.id); if(v) ans[q.id]=v; });
+  return ans;
+}
+function startQuiz(){
+  if(state.quizStart) return;
+  renderQuiz();
+  state.phase="quiz"; state.quizStart=Date.now();
+  const end=state.quizStart+QUIZ_SECONDS*1000;
+  state.quizTimer=setInterval(()=>{
+    const left=(end-Date.now())/1000;
+    $("timeLeft").textContent=fmt(left);
+    $("timer").classList.toggle("low", left<=60);
+    if(left<=0){ finishQuiz(); toast("Time is up. Moving to the writing part."); go(4); }
+  },250);
+}
+function finishQuiz(){
+  if(state.quizLocked) return;
+  state.quizLocked=true;
+  clearInterval(state.quizTimer);
+  state.quizTime=Math.round((Date.now()-state.quizStart)/1000);
+  state.quizAnswers=collectQuiz();
+  document.querySelectorAll("#quiz input").forEach(i=>i.disabled=true);
+}
+
+/* ========= ANTI-CHEAT ========= */
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden && (state.phase==="quiz" || state.phase==="writing")){
+    state.tabSwitches++;
+    setTimeout(()=>toast(`Warning: you left the test page (${state.tabSwitches}). This is recorded.`),300);
+  }
+});
+document.addEventListener("copy",e=>{ if(state.phase==="quiz"||state.phase==="writing") e.preventDefault(); });
+document.addEventListener("contextmenu",e=>{ if(state.phase==="quiz"||state.phase==="writing") e.preventDefault(); });
+document.querySelectorAll(".corr-in, #written").forEach(el=>{
+  el.addEventListener("paste",e=>{ e.preventDefault(); state.pasteAttempts++; toast("Pasting is not allowed. Please type your answer."); });
+  el.addEventListener("drop",e=>{ e.preventDefault(); state.pasteAttempts++; });
+});
+function countWords(t){ return (t.trim().match(/\S+/g)||[]).length; }
+$("written").addEventListener("input",()=>{
+  $("wordCount").textContent=countWords($("written").value)+" words (minimum 25)";
+});
+
+/* ========= SUBMIT ========= */
+function blobToBase64(blob){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>res(String(r.result).split(",")[1]);
+    r.onerror=rej; r.readAsDataURL(blob);
+  });
+}
+
+$("submitBtn").addEventListener("click", async ()=>{
+  const corr=[...document.querySelectorAll(".corr-in")].map(i=>i.value.trim());
+  const written=$("written").value.trim();
+  if(corr.some(c=>!c)) return showErr(4,"Please rewrite all 3 sentences.");
+  if(countWords(written)<25) return showErr(4,"Please write at least 25 words in part B.");
+  showErr(4,"");
+
+  if(!SCRIPT_URL || SCRIPT_URL.indexOf("PASTE_")===0) return showErr(4,"Form is not connected yet. Please contact the project manager.");
+
+  $("submitBtn").disabled=true;
+  $("overlay").classList.add("show");
+  state.phase="submitting";
+
+  try{
+    const payload={
+      name:$("name").value.trim(),
+      phone:"+27"+saLocal($("phone").value),
+      email:$("email").value.trim(),
+      age:$("age").value,
+      province:$("province").value,
+      city:$("city").value.trim(),
+      firstLang:$("firstLang").value,
+      learned:$("learned").value,
+      homeLang:$("homeLang").value,
+      laptop:radio("laptop"),
+      headphones:radio("headphones"),
+      experience:$("experience").value,
+      hours:$("hours").value,
+      payment:$("payment").value,
+      role:radio("role"),
+      vendor:$("vendor").value.trim(),
+      teamSize:$("teamSize").value.trim(),
+      quizAnswers:state.quizAnswers,
+      quizTime:state.quizTime,
+      tabSwitches:state.tabSwitches,
+      pasteAttempts:state.pasteAttempts,
+      corrections:corr,
+      written:written,
+      writeTime:Math.round((Date.now()-state.writeStart)/1000),
+      readingAudio:{data:await blobToBase64(state.audio.reading.blob), mime:state.audio.reading.type, dur:state.audio.reading.dur},
+      userAgent:navigator.userAgent
+    };
+
+    const res=await fetch(SCRIPT_URL,{method:"POST",body:JSON.stringify(payload)});
+    const data=await res.json();
+    if(!data.ok){
+      if(data.code==="DUPLICATE"){
+        $("overlay").classList.remove("show");
+        state.phase="done";
+        return showErr(4,"This WhatsApp number has already submitted the assessment. Each person can submit only once.");
+      }
+      if(data.code==="NOT_SA") throw new Error("Only South African (+27) numbers are accepted.");
+      throw new Error(data.error||"Upload failed");
+    }
+
+    storageSet("af_assess_done","1");
+    $("refId").textContent="Reference: "+data.ref;
+    $("overlay").classList.remove("show");
+    state.phase="done";
+    go(5);
+  }catch(err){
+    $("overlay").classList.remove("show");
+    $("submitBtn").disabled=false;
+    state.phase="writing";
+    showErr(4,"Submission failed. Please check your internet connection and press Submit again. ("+err.message+")");
+  }
+});
+
+window.addEventListener("beforeunload",e=>{
+  if(state.step>=1 && state.step<=4 && state.phase!=="done"){ e.preventDefault(); e.returnValue=""; }
+});
+</script>
+</body>
+</html>
