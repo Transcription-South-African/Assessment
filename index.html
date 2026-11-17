@@ -81,6 +81,8 @@
   .done .icon{width:64px;height:64px;border-radius:50%;background:var(--brand-soft);color:var(--brand);font-size:32px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
   .ref{display:inline-block;background:var(--brand-soft);color:var(--brand-dark);font-weight:700;padding:8px 16px;border-radius:8px;margin:12px 0;letter-spacing:.05em}
   .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--danger);color:#fff;padding:12px 18px;border-radius:10px;font-size:14px;display:none;z-index:40;max-width:92%}
+  .wa-btn{display:inline-block;background:#25d366;color:#fff;text-decoration:none;margin-top:10px;padding:14px 28px;font-size:16px}
+  .wa-btn:hover{background:#1ebe5b}
   footer{text-align:center;color:var(--muted);font-size:12.5px;margin-top:20px}
 </style>
 </head>
@@ -110,6 +112,9 @@
         <li>18 years or older</li>
       </ul>
     </div>
+    <div class="note err">
+      <strong>Every person must take this test individually</strong> with their own phone number and their own voice. Team leaders cannot submit on behalf of their members.
+    </div>
     <div class="rules">
       <strong>The test has 3 parts:</strong>
       <ol>
@@ -119,7 +124,7 @@
       </ol>
     </div>
     <div class="note warn">
-      <strong>Rules:</strong> Do not use Google Translate, ChatGPT or any other help. Do not leave this page during the quiz and writing parts. Leaving the page and pasting text are recorded automatically. Every team member must take this test individually with their own voice. Each number can submit only once.
+      <strong>Rules:</strong> Do not use Google Translate, ChatGPT or any other help. Do not leave this page during the quiz and writing parts. Leaving the page and pasting text are recorded automatically. Each number can submit only once.
     </div>
     <p class="hint">You need a quiet place and a working microphone. Please allow microphone access when your browser asks.</p>
     <div id="alreadyDone" class="note err" style="display:none">This device has already submitted the assessment. Each person may submit only once.</div>
@@ -217,23 +222,11 @@
       <option>Payoneer</option><option>Binance (USDT)</option><option>Bank transfer</option><option>Other</option>
     </select>
 
-    <h3>Application type</h3>
+    <h3>Team leader</h3>
 
-    <label>You are applying as <span class="req">*</span></label>
-    <div class="radio-group">
-      <label><input type="radio" name="role" value="Individual freelancer"> Individual freelancer</label>
-      <label><input type="radio" name="role" value="Vendor / Team leader"> Vendor / Team leader</label>
-      <label><input type="radio" name="role" value="Team member under a vendor"> Team member under a vendor</label>
-    </div>
-
-    <div id="vendorBox" style="display:none">
-      <label>Vendor / Team leader name <span class="req">*</span></label>
-      <input type="text" id="vendor">
-    </div>
-    <div id="teamBox" style="display:none">
-      <label>How many native Afrikaans speakers are in your team? <span class="req">*</span></label>
-      <input type="text" id="teamSize" inputmode="numeric">
-    </div>
+    <label>Team leader name (optional)</label>
+    <input type="text" id="vendor">
+    <div class="hint">If someone referred you or you work under a team leader, write their name here.</div>
 
     <label class="check"><input type="checkbox" id="adult"> I am 18 years or older.</label>
     <label class="check"><input type="checkbox" id="declare"> I confirm that I am a native Afrikaans speaker from South Africa and that the recording and answers in this test are my own.</label>
@@ -303,7 +296,9 @@
       <h2>Assessment submitted</h2>
       <p class="sub">Thank you. Our team will review your recording and answers.</p>
       <div class="ref" id="refId"></div>
-      <p class="hint">Save this reference number. If you pass, you will be added to the project group. Vendors and team leaders will receive their commission for every team member who passes.</p>
+      <p class="hint">Save this reference number and share it with our team in the WhatsApp group.</p>
+      <div class="note warn" style="margin-top:18px;text-align:left"><strong>Final step:</strong> Join our WhatsApp group now. You must join to receive your result and project updates.</div>
+      <a class="btn wa-btn" id="waLink" href="#" target="_blank" rel="noopener">Join WhatsApp Group</a>
     </div>
   </section>
 
@@ -317,6 +312,7 @@
 /* ========= CONFIG ========= */
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxaiB9EYGul8i4_nAzg4cBTOOf2QyVQ8k-xIDbn0JuC5e5g4pUyMdD1KkOOqLKQ6Ujm/exec";
 const QUIZ_SECONDS = 360;
+const WHATSAPP_GROUP = "https://chat.whatsapp.com/KWJ0HOeGve5L2we0ZuTvh1";
 
 /* Answers are checked on the server (Code.gs), not here */
 const QUESTIONS = [
@@ -391,16 +387,16 @@ function saLocal(raw){
 }
 $("phone").addEventListener("input",()=>{ $("phone").value=$("phone").value.replace(/[^\d\s]/g,""); });
 
-document.querySelectorAll('input[name=role]').forEach(r=>r.addEventListener("change",()=>{
-  const role=radio("role");
-  $("vendorBox").style.display = role==="Team member under a vendor" ? "block":"none";
-  $("teamBox").style.display = role==="Vendor / Team leader" ? "block":"none";
-}));
+$("phone").addEventListener("blur",()=>{
+  const v=$("phone").value.trim();
+  if(v && !saLocal(v)) showErr(1,"Only South African numbers (+27) are accepted. Numbers from other countries cannot be used.");
+  else showErr(1,"");
+});
+$("waLink").href=WHATSAPP_GROUP;
 
 /* ========= VALIDATION ========= */
 function validate(n){
   if(n===1){
-    const role=radio("role");
     if(!$("name").value.trim() || $("name").value.trim().split(/\s+/).length<2) return showErr(1,"Please enter your full name (first and last name).");
     if(!saLocal($("phone").value)) return showErr(1,"Please enter a valid South African WhatsApp number (+27). Example: 82 123 4567");
     if(!/^\S+@\S+\.\S+$/.test($("email").value.trim())) return showErr(1,"Please enter a valid email address.");
@@ -415,9 +411,6 @@ function validate(n){
     if(!$("experience").value) return showErr(1,"Please select your transcription experience.");
     if(!$("hours").value) return showErr(1,"Please select your daily working hours.");
     if(!$("payment").value) return showErr(1,"Please select your preferred payment method.");
-    if(!role) return showErr(1,"Please select how you are applying.");
-    if(role==="Team member under a vendor" && !$("vendor").value.trim()) return showErr(1,"Please enter your vendor or team leader's name.");
-    if(role==="Vendor / Team leader" && !/^\d+$/.test($("teamSize").value.trim())) return showErr(1,"Please enter your team size as a number.");
     if(!$("adult").checked) return showErr(1,"You must be 18 years or older to apply.");
     if(!$("declare").checked) return showErr(1,"Please confirm the declaration.");
     showErr(1,""); return true;
@@ -595,9 +588,9 @@ $("submitBtn").addEventListener("click", async ()=>{
       experience:$("experience").value,
       hours:$("hours").value,
       payment:$("payment").value,
-      role:radio("role"),
+      role:"Individual",
       vendor:$("vendor").value.trim(),
-      teamSize:$("teamSize").value.trim(),
+      teamSize:"",
       quizAnswers:state.quizAnswers,
       quizTime:state.quizTime,
       tabSwitches:state.tabSwitches,
